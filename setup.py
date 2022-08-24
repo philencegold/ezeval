@@ -14,7 +14,7 @@ setuptools.setup(
      long_description_content_type="text/markdown",
      url="https://github.com/philencegold/ezeval",
      packages=setuptools.find_packages(),
-     install_requires=['PyPDF2', 'openpyxl'],
+     install_requires=['PyPDF2', 'openpyxl', 'unidecode'],
 
      classifiers=[
          "Programming Language :: Python :: 3",
