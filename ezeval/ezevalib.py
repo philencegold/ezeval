@@ -12,16 +12,21 @@ from openpyxl.formatting.rule import CellIsRule, FormulaRule
 from openpyxl.styles import Color, PatternFill, Font, Border
 
 class EvalAuto:
-    def __init__(self, reponses_eleves, reponses_corrige):
+
+    def __init__(self, reponses_eleves='', reponses_corrige=''):
         self.note = 0
         self.debug = True
-        self.reponses_eleve = self.reponses(reponses_eleves)
-        self.reponses_corrige = self.reponses(reponses_corrige)
+        if reponses_eleves != '':
+            self.reponses_eleve = self.reponses(reponses_eleves)
+        if reponses_corrige != '':
+            self.reponses_corrige = self.reponses(reponses_corrige)
         self.list_eval = []
         self.headers = []
         if self.debug:
-            print(self.reponses_eleve)
-            print(self.reponses_corrige)
+            if reponses_eleves != '':
+                print(self.reponses_eleve)
+            if reponses_corrige != '':
+                print(self.reponses_corrige)
 
     def getNote(self):
         return self.note
@@ -45,16 +50,52 @@ class EvalAuto:
         if removeSpaces:
             r=r.replace(" ","")
         r=r.replace("-","")
+        r=r.replace("'"," ")
         r = unidecode.unidecode(r)
         return "".join(r)
 
-    # def evalue(reponse, func, nbpoints=1):
-    #     global note, reponses_eleves, reponses_corrige
-    #     if (func(reponses_eleves[reponse],reponses_corrige[reponse])):
-    #         note += nbpoints
-    #         print("%s : OK"%reponse)
-    #     else:
-    #         print("%s : %s"%(reponse, fdfinfo[reponse]))
+
+
+    def normalizeList(self,liste) :
+        res=[]
+        for mots in liste:
+            m=self.normalizeChain(mots)
+            m = re.sub(r'[^a-zA-Z]', '', m)
+            res.append(m)
+        return res
+
+## Creer une liste normalisee des mots d'une phrase
+
+    # def list_mots(self, s):
+    #     l = s.split()
+    #     res=[]
+    #     for mots in l:
+    #         m=self.normalizeChain(mots)
+    #         m = re.sub(r'[^a-zA-Z]', '', m)
+    #         if m!='':
+    #             res.append(m)
+    #     return res
+
+## Nombre et listes des éléments communs à deux listes
+
+    # def motsCommuns(self, list1, list2):
+    #     a = set(list1)
+    #     b = set(list2)
+    #     c = a.intersection(b)
+    #     return [len(c),c]
+
+    def motsPresents(self,rep,liste) :
+        chaine=self.normalizeChain(rep, False)
+        reference=self.normalizeList(liste)
+        cpt=0
+        mots=[]
+        for m in reference :
+            pattern='.*%s'%m
+            if re.match(pattern,chaine) :
+                cpt+=1
+                mots.append(m)
+        return [cpt,mots]
+            
 
     def distance(self, rep_a,rep_b,type):
         if type == "nombres" :
@@ -64,13 +105,19 @@ class EvalAuto:
                 d = [abs(int(a)-int(b))]
             else :
                 d = [-1]
-        # if type == "chaine" :
-        #     a = self.normalizeChain(rep_a)
-        #     b = self.normalizeChain(rep_b)
-        #     if (a != '') and rep_a == rep_b :
-        #         d = [0]
-        #     else :
-        #         d = [-1]
+        if type == "chaine" :
+            a = self.normalizeChain(rep_a)
+            b = self.normalizeChain(rep_b)
+            if (a != '') and a == b :
+                d = [0]
+            else :
+                d = [-1]
+        if type == "mots" :
+            if (rep_a != '') :
+                d = rep_a
+            else :
+                d = [-1]
+
         if type == "mixte":
             a1 = self.keepNumbers(rep_a)
             b1 = self.keepNumbers(rep_b)
@@ -87,6 +134,7 @@ class EvalAuto:
             d=[d1,d2]   
         if type == "texte" :
             d=[rep_a]
+        
         return d
 
 
@@ -94,23 +142,36 @@ class EvalAuto:
         rep = 'champ'+str(n)
         rep_a = self.reponses_eleve[rep]
         rep_b = self.reponses_corrige[rep]
-        d = self.distance(rep_a,rep_b,type)
-       
+               
         if n <= 3:
             self.list_eval.append(rep_a)
-        else:
-            if type != "texte" :
-                for i in range(len(d)) :
-                        self.headers.append("Q%s"%(n-3))
-                        if  d[i] <= borne[i] and d[i] != -1 :
-                            self.list_eval.append({'note': 1, 'comm': rep_a})
-                            print("%s : OK"%rep)
-                        else :
-                            self.list_eval.append({'note': 0, 'comm': rep_a})
-                            print("%s : %s"%(rep, rep_a))
+        else :
             if type ==  "texte" :
                 self.headers.append("Q%s"%(n-3))
-                self.list_eval.append( {'note': '', 'comm': d[0]})
+                self.list_eval.append( {'note': '', 'comm': rep_a}) 
+            elif type == "mots" :
+                d = self.distance(rep_a,rep_b,type)
+                self.headers.append("Q%s"%(n-3))
+                if  d != -1 :
+                    ref=self.normalizeList(borne)
+                    mots=self.motsPresents(d,ref)
+                    self.list_eval.append({'note': mots[0], 'comm': rep_a})
+                    print("%s : OK %s"%(rep,mots[1]))
+                else :
+                    self.list_eval.append({'note': 0, 'comm': rep_a})
+                    print("%s : %s"%(rep, rep_a))
+            else :
+                d = self.distance(rep_a,rep_b,type)
+                for i in range(len(d)) :
+                    self.headers.append("Q%s"%(n-3))
+                    if  d[i] <= borne[i] and d[i] != -1 :
+                        self.list_eval.append({'note': 1, 'comm': rep_a})
+                        print("%s : OK"%rep)
+                    else :
+                        self.list_eval.append({'note': 0, 'comm': rep_a})
+                        print("%s : %s"%(rep, rep_a))
+
+
 
 
     def getNotes(self):
@@ -180,11 +241,3 @@ class EvalAuto:
         wb.save(filename = f)
 
 
-# Détection de certains mots définis dans une liste : à revoir
-
-    # def motsPresents(self, mots: [], s):
-    #     cpt = 0
-    #     for m in mots:
-    #         if m in self.normalizeChain(s, False):
-    #             cpt += 1
-    #     return cpt

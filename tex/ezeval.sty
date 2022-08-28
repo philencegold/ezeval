@@ -1,0 +1,65 @@
+
+\usepackage{ifthen}
+\usepackage{enumitem}
+
+\newcounter{showreponses}
+
+\newcommand{\afficherreponses}{
+    \setcounter{showreponses}{1}
+}
+
+\relax
+\newwrite\myfile
+\immediate\openout\myfile=correction.py
+\immediate\write\myfile{import glob}
+\immediate\write\myfile{from ezeval import ezevalib}
+\immediate\write\myfile{solutions = glob.glob("./copies/corrige.pdf")}
+\immediate\write\myfile{onlyfiles_pdf = glob.glob("./copies/*.pdf")}
+\immediate\write\myfile{onlyfiles_pdf.remove('./copies/corrige.pdf')}
+\immediate\write\myfile{res_classe=[]}
+\immediate\write\myfile{for pdf_file_name in onlyfiles_pdf:}
+\immediate\write\myfile{   E = ezevalib.EvalAuto(pdf_file_name, solutions[0])}
+
+
+\newcounter{champ}
+\newcommand{\champ}[4]{
+\addtocounter{champ}{1}
+   \ifthenelse {\theshowreponses=0} {
+      \begin{Form}
+      \TextField[name=champ\thechamp,%
+          width=#1\linewidth,%
+          height=15pt,%
+          bordercolor=teal,%
+          align=1,%
+          color=red,%
+          borderwidth=0.1,%
+          backgroundcolor=lime!50!white,%
+          charsize = 11 pt,%
+          height=12pt]{}
+      \end{Form}
+      } 
+      {
+      \begin{Form}
+      \TextField[name=champ\thechamp,%
+          width=#1\linewidth,%
+          default=#2,%
+          height=15pt,%
+          bordercolor=teal,%
+          align=1,%
+          color=red,%
+          borderwidth=0.1,%
+          backgroundcolor=lime!50!white,%
+          charsize = 11 pt,%
+          height=12pt]{}
+      \end{Form}
+      }
+      \immediate\write\myfile{   E.evaluation(\thechamp,"#3",#4)}
+}
+
+\newcommand{\fin}{
+  \immediate\write\myfile{   res_classe.append(E.getNotes())}
+  \immediate\write\myfile{res_classe.insert(0, E.getHeaders())}
+  \immediate\write\myfile{ezevalib.EvalAuto.writeToExcel(res_classe)}
+}
+
+
