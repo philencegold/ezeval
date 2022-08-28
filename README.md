@@ -3,7 +3,7 @@
 ## Installation
 
 1. Dans un terminal ou une invite de commandes, taper ```pip install ezeval -U```
-1. Copier [ezeval.sty](tex/ezeval.sty) dans le répertoire où se trouve le fichier .tex du formulaire ou, pour qu'il soit accessible de n'importe quel répertoire, copier le .sty dans :
+1. Créer un fichier ezeval.sty avec un éditeur tex et y copier le contenu de [ezeval.sty](tex/ezeval.sty). Enregistrer ce fichier dans le répertoire où se trouve le fichier .tex du formulaire ou, pour qu'il soit accessible de n'importe quel répertoire, dans :
 * ```TEXMFHOME/tex/xelatex/ezeval/```, si xelatex est utilisé pour compiler les fichiers
 * ```TEXMFHOME/tex/latex/ezeval/``` si pdflatex est utilisé. 
 

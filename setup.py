@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
      name='ezeval',  
-     version='0.0.1',
+     version='0.0.2',
      author="philencegold",
      author_email="",
      description="Library for easy marking.",
