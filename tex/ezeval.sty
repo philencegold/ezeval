@@ -12,10 +12,11 @@
 \newwrite\myfile
 \immediate\openout\myfile=correction.py
 \immediate\write\myfile{import glob}
+\immediate\write\myfile{import os.path}
 \immediate\write\myfile{from ezeval import ezevalib}
-\immediate\write\myfile{solutions = glob.glob("./copies/corrige.pdf")}
-\immediate\write\myfile{onlyfiles_pdf = glob.glob("./copies/*.pdf")}
-\immediate\write\myfile{onlyfiles_pdf.remove('./copies/corrige.pdf')}
+\immediate\write\myfile{solutions = glob.glob(os.path.join("copies", "corrige.pdf"))}
+\immediate\write\myfile{onlyfiles_pdf = glob.glob(os.path.join("copies", "*.pdf"))}
+\immediate\write\myfile{onlyfiles_pdf.remove(os.path.join("copies", "corrige.pdf"))}
 \immediate\write\myfile{res_classe=[]}
 \immediate\write\myfile{for pdf_file_name in onlyfiles_pdf:}
 \immediate\write\myfile{   E = ezevalib.EvalAuto(pdf_file_name, solutions[0])}
@@ -62,4 +63,19 @@
   \immediate\write\myfile{ezevalib.EvalAuto.writeToExcel(res_classe)}
 }
 
-
+% \newcounter{reponse}
+% \newcommand{\reponse}[1]{
+% \addtocounter{reponse}{1}
+% \begin{Form}
+%     \TextField[name=reponse\thereponse,%
+%         width=#1\linewidth,%
+%         height=15pt,%
+%         bordercolor=black,%
+%         align=1,%
+%         color=red,%
+%         borderwidth=0.1,%
+%         backgroundcolor=lime,%
+%         charsize = 11 pt,%
+%         height=12pt]{}
+% \end{Form}
+% }
