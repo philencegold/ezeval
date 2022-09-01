@@ -113,8 +113,9 @@ class EvalAuto:
             else :
                 d = [-1]
         if type == "mots" :
-            if (rep_a != '') :
-                d = rep_a
+            a = self.normalizeChain(rep_a)
+            if (a != '') :
+                d = a
             else :
                 d = [-1]
 
@@ -152,7 +153,7 @@ class EvalAuto:
             elif type == "mots" :
                 d = self.distance(rep_a,rep_b,type)
                 self.headers.append("Q%s"%(n-3))
-                if  d != -1 :
+                if  d[0] != -1 :
                     ref=self.normalizeList(borne)
                     mots=self.motsPresents(d,ref)
                     self.list_eval.append({'note': mots[0], 'comm': rep_a})
